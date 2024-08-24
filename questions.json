@@ -1,0 +1,13 @@
+[
+    {
+        "text": "What is the capital of France?",
+        "type": "multiple_choice",
+        "options": ["Paris", "Berlin", "Madrid", "Rome"],
+        "correct_answer": "Paris"
+    },
+    {
+        "text": "Who wrote 'Hamlet'?",
+        "type": "open",
+        "correct_answer": "William Shakespeare"
+    }
+]
