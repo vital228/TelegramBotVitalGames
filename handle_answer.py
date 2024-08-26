@@ -2,6 +2,7 @@ from telebot import types
 from bots import bot
 from get_game_by import get_game_by_message
 from send_next_question import send_next_question
+from TopicsRound import start_topic_round
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_answer(call):
@@ -16,14 +17,14 @@ def handle_answer(call):
             if current_question.question_type == "multiple_choice":
                 correct_count = sum(1 for answer in current_question.answers.values() if answer == current_question.correct_answer)
                 bot.send_message(call.message.chat.id, f"{correct_count} игрок(ов) ответили правильно.")
+                send_next_question(call.message, game)
             elif current_question.question_type == "open":
                 unique_answers = set(current_question.answers.values())
                 markup = types.InlineKeyboardMarkup()
                 for answer in unique_answers:
                     markup.add(types.InlineKeyboardButton(text=answer, callback_data=f"correct_{answer}"))
                 markup.add(types.InlineKeyboardButton(text="Продолжить", callback_data="next_question"))
-                bot.send_message(call.message.chat.id, "Уникальные ответы игроков:", reply_markup=markup)
-            send_next_question(call.message, game)  # Переход к следующему вопросу
+                bot.send_message(call.message.chat.id, "Уникальные ответы игроков:", reply_markup=markup)  # Переход к следующему вопросу
     elif call.data.startswith("correct_"):
         if call.from_user.id == game.admin_id:
             correct_answer = call.data[len("correct_"):]
@@ -34,6 +35,9 @@ def handle_answer(call):
     elif call.data == "next_question":
         if call.from_user.id == game.admin_id:
             send_next_question(call.message, game)
+    elif call.data.startswith("topic_"):
+        if call.from_user.id == game.admin_id:
+            start_topic_round(game)
     else:
         player_id = call.from_user.id
         if player_id in game.players:
@@ -46,9 +50,10 @@ def handle_answer(call):
 @bot.message_handler(func=lambda message: True)
 def handle_open_question(message):
     game = get_game_by_message(message)
-    if game and game.current_round:
-        current_question = game.current_round.questions[game.current_round.current_question_index - 1]
+    if game and game.get_current_round():
+        current_question = game.get_current_round().questions[game.get_current_round().current_question_index - 1]
         if current_question.question_type == "open":
             current_question.answers[message.from_user.id] = message.text
             bot.send_message(message.chat.id, "Ваш ответ принят.")
             bot.send_message(game.admin_id, f"Игрок {game.players[message.from_user.id]['name']} ответил: {message.text}")
+

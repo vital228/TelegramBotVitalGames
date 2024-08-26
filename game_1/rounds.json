@@ -1,0 +1,14 @@
+[
+    {
+        "name_round": "First",
+        "type_round": "simple",
+        "file_questions": "game_1/questions.json",
+        "rules": "Отвечаем на вопросы"
+    },
+    {
+        "name_round": "Самый умный",
+        "type_round": "topics",
+        "rules": "У вас будет 60 секунд",
+        "topics": ["Sport"]
+    }
+]

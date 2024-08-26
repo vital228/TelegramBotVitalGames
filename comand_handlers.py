@@ -2,9 +2,9 @@ from telebot import types
 from get_game_by import get_game_by_admin
 from process_join_game import process_join_game
 from bots import bot, games
-from Round import Round
+from Round import Round, load_round_from_file
 from Question import load_questions_from_file, Question
-from QuizGame import QuizGame
+from QuizGame import QuizGame, sorted_score
 from send_next_question import send_next_question
 from menu import main_menu
 
@@ -26,32 +26,44 @@ def join_game(message):
 def start_round(message):
     game = get_game_by_admin(message)
     if game:
-        bot.send_message(message.chat.id, "Введите описание правил для нового раунда", reply_markup=types.ReplyKeyboardRemove())
-        bot.register_next_step_handler(message, set_round_rules, game)
+        round = game.get_next_round()
+        if round:
+            for player_id in game.players:
+                bot.send_message(player_id, f"Начался {round.name}. Правила: {round.rules}")
+            markup = types.InlineKeyboardMarkup()
+            if round.type == 'simple':
+                markup.add(types.InlineKeyboardButton(text="Продолжить", callback_data="next_question"))
+                bot.send_message(message.chat.id, f"{round.name} начался. Вопросы загружены.", reply_markup=markup)
+            if round.type == 'topics':
+                for topic in round.topics:
+                    if topic['is_played']:
+                        markup.add(types.InlineKeyboardButton(text=f"{topic['round']} ❌", callback_data="wrong topic"))
+                    else:
+                        markup.add(types.InlineKeyboardButton(text=f"{topic['round']}", callback_data=f"topic_{topic['round']}"))
+        else:
+            leaderboard = "\n".join([f"{game.players[p_id]['name']}: {player['score']}" for p_id, player in sorted_score(game).items()
+ ])
+            bot.send_message(message.chat.id, f"Раундов больше нет. Финальная таблица лидеров:\n{leaderboard}", reply_markup=main_menu())
+        for player_id in game.players:
+            bot.send_message(player_id, f"Раундов больше нет. Финальная таблица лидеров:\n{leaderboard}", reply_markup=main_menu())
 
 @bot.message_handler(commands=["end_round"])
 def end_round(message):
     game = get_game_by_admin(message)
-    if game and game.current_round:
-        leaderboard = "\n".join([f"{game.players[p_id]['name']}: {player['score']}" for p_id, player in game.players.items()])
+    if game and game.get_current_round():
+        leaderboard = "\n".join([f"{game.players[p_id]['name']}: {player['score']}" for p_id, player in sorted_score(game).items()
+ ])
         bot.send_message(message.chat.id, f"Раунд завершен. Таблица лидеров:\n{leaderboard}", reply_markup=main_menu())
+        for player_id in game.players:
+            bot.send_message(player_id, f"Раунд завершен. Таблица лидеров:\n{leaderboard}", reply_markup=main_menu())
         game.current_round = None
 
 def set_game_name(message):
     game_name = message.text
     if game_name not in games:
         games[game_name] = QuizGame(admin_id=message.from_user.id, game_name=game_name)
+        games[game_name].rounds = load_round_from_file('game_1/rounds.json')
         bot.send_message(message.chat.id, f"Игра '{game_name}' создана. Игроки могут присоединиться командой /join_game", reply_markup=main_menu())
     else:
         bot.send_message(message.chat.id, "Игра с таким именем уже существует. Введите другое имя.", reply_markup=main_menu())
 
-def set_round_rules(message, game):
-    round_name = f"Раунд {len(game.rounds) + 1}"
-    game.current_round = Round(name=round_name, rules=message.text)
-    game.rounds.append(game.current_round)
-    questions = load_questions_from_file('questions.json')
-    game.current_round.load_questions(questions)
-    bot.send_message(message.chat.id, f"{round_name} начался. Вопросы загружены.", reply_markup=main_menu())
-    for player_id in game.players:
-        bot.send_message(player_id, f"Начался {round_name}. Правила: {game.current_round.rules}")
-    send_next_question(message, game)
