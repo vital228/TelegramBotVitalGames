@@ -1,7 +1,18 @@
 [
     {
         "text": "Кто лучший спортсмен?",
-        "type": "open",
+        "type": "open_topic",
         "correct_answer": "Барга"
+    },
+    {
+        "text": "Кто лучший футболист?",
+        "type": "open_topic",
+        "correct_answer": "Бага"
+    }
+    ,
+    {
+        "text": "Где играли чемпионат мира?",
+        "type": "open_topic",
+        "correct_answer": "Бар"
     }
 ]

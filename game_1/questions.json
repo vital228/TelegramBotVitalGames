@@ -1,5 +1,19 @@
 [
     {
+        "text": "В каком году Виталик перевелся в ЯрГУ",
+        "type": "pentagon",
+        "correct_answer": "2021",
+        "max_score": 3,
+        "hints": ["Был ЧЕ в Санкт-Петербуге", "Основание команды Сиаманги"]
+    },
+    {
+        "text": "Best films",
+        "type": "big_open",
+        "correct_answer": "Harry Potter\n Avergens\n Начало",
+        "max_score": 10,
+        "audio": "game_1/audio/2007.mp3"
+    },
+    {
         "text": "What is the capital of France?",
         "type": "multiple_choice",
         "options": ["Paris", "Berlin", "Madrid", "Rome"],

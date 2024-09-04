@@ -1,0 +1,18 @@
+[
+    {
+        "text": "Лучшая игра на свете",
+        "type": "open_topic",
+        "correct_answer": "Барга"
+    },
+    {
+        "text": "Лучший фильм",
+        "type": "open_topic",
+        "correct_answer": "Барга"
+    }
+    ,
+    {
+        "text": "В какой стране снимали люди в черном?",
+        "type": "open_topic",
+        "correct_answer": "Барга"
+    }
+]

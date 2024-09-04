@@ -16,7 +16,7 @@ class QuizGame:
             return round
         return None
     def get_current_round(self):
-        if self.current_round_index < len(self.rounds):
+        if self.current_round_index <= len(self.rounds) and self.current_round_index > 0:
             return self.rounds[self.current_round_index - 1]
         return None
     
@@ -24,3 +24,4 @@ def sorted_score(game):
     return {key: value for key, 
                value in sorted(game.players.items(), 
                                key=lambda item: item[1]['score'])}
+
